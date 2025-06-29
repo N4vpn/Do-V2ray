@@ -56,23 +56,18 @@ cat > ~/v2ray/config.json <<EOF
 }
 EOF
 
-# Docker container ရှိရင်ရပ်ပြီး ဖျက်မယ်
-docker stop v2ray 2>/dev/null
-docker rm v2ray 2>/dev/null
+echo "Starting V2Ray docker container..."
 
-# Docker container run command ကို config file နဲ့ တိကျစွာ သတ်မှတ်မယ်
+# Container ရှိရင် ဖျက်ပြီး ပြန် run မယ်
+docker rm -f v2ray 2>/dev/null
+
 docker run -d --name v2ray \
   -p 8080:8080 \
   -v ~/v2ray/config.json:/etc/v2ray/config.json \
   v2fly/v2fly-core \
   v2ray run -config /etc/v2ray/config.json
 
-echo ""
-echo "✅ V2Ray Docker container started successfully!"
-echo ""
+echo "V2Ray started successfully."
 echo "UUID: $UUID"
-echo "WebSocket Path: $WS_PATH"
+echo "WS Path: $WS_PATH"
 echo "Port: 8080"
-echo ""
-echo "Script By Nanda (N4 VPN) 🚀"
-echo ""
