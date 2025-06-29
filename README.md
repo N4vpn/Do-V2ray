@@ -1,15 +1,20 @@
-# V2Ray One-Click Install Script for DigitalOcean VPS
+# 🌐 Do-V2ray (V2Ray + WebSocket + Cloud Run Proxy)
 
-This script installs and runs V2Ray (VLESS + WebSocket, no TLS) on port 8080 with the path `/TG-@n4vpn`.
+🚀 One-click V2Ray Server installation on DigitalOcean VPS with WebSocket (WS) support, optimized to work with **Google Cloud Run** as a reverse proxy.
 
-## Usage
+> ✅ Script By: **Nanda (N4 VPN)**  
+> 📌 Language: Bash + Docker  
+> 🌍 Supports: Ubuntu 20.04 / 22.04 / 24.04 VPS (Tested on DigitalOcean)
 
-Run the following command on your DigitalOcean VPS:
+---
 
-```bash
-bash <(curl -Ls https://raw.githubusercontent.com/N4vpn/Do-V2ray/main/install.sh)
+## 🔧 Features
 
-```
-bash
-chmod +x install.sh
-./install.sh
+- Installs latest **V2Fly-core** via Docker
+- Sets up **VLESS + WebSocket** on port `8080`
+- Easy to customize UUID and WebSocket path
+- Auto-generates UUID if none provided
+- Works perfectly with **Cloud Run Reverse Proxy**
+- Fast deployment with:  
+  ```bash
+  bash <(curl -Ls https://raw.githubusercontent.com/N4vpn/Do-V2ray/main/install.sh)
