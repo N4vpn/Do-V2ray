@@ -1,52 +1,91 @@
 #!/bin/bash
 
-echo "" echo "===========================================" echo " 🚀 Script By Nanda (N4 VPN)                " echo "===========================================" echo ""
+echo ""
+echo "==========================================="
+echo " 🚀 Script By Nanda (N4 VPN)"
+echo "==========================================="
+echo ""
 
-=== USER SET UUID ===
+# User input for domain or IP
+read -p "Enter your VPS domain or IP address: " DOMAIN
+if [[ -z "$DOMAIN" ]]; then
+  echo "❌ Domain or IP cannot be empty. Exiting."
+  exit 1
+fi
 
-UUID="d4ebe6db-364b-4618-94cf-af93d177041d"  # ← Change this to your own UUID if needed
-
-Auto-generate UUID if not set
-
-if [ -z "$UUID" ]; then UUID=$(cat /proc/sys/kernel/random/uuid) fi
-
-WebSocket path (can customize)
+# User input for UUID (optional)
+read -p "Enter your UUID (leave empty for auto generate): " UUID
+if [[ -z "$UUID" ]]; then
+  UUID=$(cat /proc/sys/kernel/random/uuid)
+  echo "🆔 No UUID provided, auto generated: $UUID"
+else
+  echo "🆔 Using provided UUID: $UUID"
+fi
 
 WS_PATH="/TG-@n4vpn"
+PORT=8080
 
-Display config
-
-echo "Using UUID: $UUID" echo "WS Path: $WS_PATH" echo "Port: 8080"
-
-Install Docker if not found
-
-if ! command -v docker &> /dev/null; then echo "Installing Docker..." apt update apt install -y docker.io systemctl start docker systemctl enable docker fi
-
-Prepare v2ray config directory
+# Check & install Docker if missing
+if ! command -v docker &> /dev/null; then
+  echo "📦 Installing Docker..."
+  apt update -y
+  apt install -y docker.io
+  systemctl start docker
+  systemctl enable docker
+else
+  echo "✅ Docker already installed."
+fi
 
 mkdir -p ~/v2ray
 
-Write V2Ray config.json
-
-cat > ~/v2ray/config.json <<EOF { "inbounds": [{ "port": 8080, "protocol": "vless", "settings": { "clients": [{ "id": "$UUID", "flow": "xtls-rprx-vision" }], "decryption": "none" }, "streamSettings": { "network": "ws", "wsSettings": { "path": "$WS_PATH" } } }], "outbounds": [{ "protocol": "freedom", "settings": {} }] } EOF
-
-echo "Starting V2Ray docker container..."
-
-Remove existing container if exists
+cat > ~/v2ray/config.json <<EOF
+{
+  "inbounds": [{
+    "port": $PORT,
+    "protocol": "vless",
+    "settings": {
+      "clients": [{
+        "id": "$UUID",
+        "flow": "xtls-rprx-vision"
+      }],
+      "decryption": "none"
+    },
+    "streamSettings": {
+      "network": "ws",
+      "wsSettings": {
+        "path": "$WS_PATH"
+      }
+    }
+  }],
+  "outbounds": [{
+    "protocol": "freedom",
+    "settings": {}
+  }]
+}
+EOF
 
 docker rm -f v2ray 2>/dev/null
 
-Run V2Ray container
+echo "🚀 Starting V2Ray docker container..."
+docker run -d --name v2ray \
+  -p $PORT:$PORT \
+  -v ~/v2ray/config.json:/etc/v2ray/config.json \
+  v2fly/v2fly-core \
+  v2ray -config /etc/v2ray/config.json
 
-docker run -d --name v2ray 
--p 8080:8080 
--v ~/v2ray/config.json:/etc/v2ray/config.json 
-v2fly/v2fly-core 
-v2ray -config /etc/v2ray/config.json
+sleep 3
 
-echo "===========================================" echo " ✅ V2Ray deployed with Docker successfully." echo " UUID: $UUID" echo " WS Path: $WS_PATH" echo " Port: 8080" echo "==========================================="
+docker ps -a --filter name=v2ray | grep v2ray > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo ""
+  echo "✅ V2Ray started successfully!"
+  echo "UUID: $UUID"
+  echo "WebSocket Path: $WS_PATH"
+  echo "Port: $PORT"
 
-Optional: Generate client config URL
-
-echo "" echo "Client VLESS URL:" echo "vless://$UUID@your-domain.com:443?encryption=none&security=tls&type=ws&host=your-domain.com&path=%2F$(echo $WS_PATH | sed 's/^///')#N4VPN"
-
+  VLESS_URL="vless://${UUID}@${DOMAIN}:${PORT}?type=ws&security=none&path=${WS_PATH}#N4VPN"
+  echo ""
+  echo "📢 Your VLESS URL:"
+  echo "$VLESS_URL"
+else
+  echo "❌ V2Ray container failed to start."
