@@ -1,23 +1,24 @@
 #!/bin/bash
+
 echo ""
 echo "==========================================="
 echo " 🚀 Script By Nanda (N4 VPN)                "
 echo "==========================================="
 echo ""
 
-# === USER SET ===
-UUID="d4ebe6db-364b-4618-94cf-af93d177041d"
-WS_PATH="/TG-@n4vpn"
-CLOUD_RUN_HOST="nanda-xxxx.us-east4.run.app"
+# === USER SET UUID ===
+UUID="d4ebe6db-364b-4618-94cf-af93d177041d"  # ← မိမိ UUID ဖြည့်ပါ၊ မဖြည့်ရင် auto generate ဖြစ်မယ်
 
-# Auto-generate UUID if empty
 if [ -z "$UUID" ]; then
   UUID=$(cat /proc/sys/kernel/random/uuid)
 fi
 
 echo "Using UUID: $UUID"
 
-# Install Docker if needed
+# WebSocket Path ကိုပြင်နိုင်မယ်
+WS_PATH="/TG-@n4vpn"
+
+# Docker install လုပ်မရှိရင် install လုပ်မယ်
 if ! command -v docker &> /dev/null; then
   echo "Installing Docker..."
   apt update
@@ -26,9 +27,9 @@ if ! command -v docker &> /dev/null; then
   systemctl enable docker
 fi
 
-# Create directory and config
 mkdir -p ~/v2ray
 
+# V2Ray Config ဖိုင်ရေးထုတ်မယ်
 cat > ~/v2ray/config.json <<EOF
 {
   "inbounds": [{
@@ -49,24 +50,29 @@ cat > ~/v2ray/config.json <<EOF
     }
   }],
   "outbounds": [{
-    "protocol": "freedom"
+    "protocol": "freedom",
+    "settings": {}
   }]
 }
 EOF
 
-# Start V2Ray container
-docker rm -f v2ray > /dev/null 2>&1
-docker run -d --name v2ray \
-  --restart unless-stopped \
-  -v ~/v2ray/config.json:/etc/v2ray/config.json \
-  -p 8080:8080 \
-  v2fly/v2fly-core
+# Docker container ရှိရင်ရပ်ပြီး ဖျက်မယ်
+docker stop v2ray 2>/dev/null
+docker rm v2ray 2>/dev/null
 
-# Generate VLESS URL
+# Docker container run command ကို config file နဲ့ တိကျစွာ သတ်မှတ်မယ်
+docker run -d --name v2ray \
+  -p 8080:8080 \
+  -v ~/v2ray/config.json:/etc/v2ray/config.json \
+  v2fly/v2fly-core \
+  v2ray run -config /etc/v2ray/config.json
+
 echo ""
-echo "🎉 V2Ray setup completed!"
-echo "==========================================="
-echo "✅ VLESS URL (import into v2ray clients):"
+echo "✅ V2Ray Docker container started successfully!"
 echo ""
-echo "vless://$UUID@$CLOUD_RUN_HOST:443?encryption=none&security=tls&type=ws&host=$CLOUD_RUN_HOST&path=$WS_PATH#N4VPN"
-echo "==========================================="
+echo "UUID: $UUID"
+echo "WebSocket Path: $WS_PATH"
+echo "Port: 8080"
+echo ""
+echo "Script By Nanda (N4 VPN) 🚀"
+echo ""
