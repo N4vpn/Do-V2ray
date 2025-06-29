@@ -9,5 +9,6 @@ Run the following command on your DigitalOcean VPS:
 ```bash
 bash <(curl -Ls https://raw.githubusercontent.com/N4vpn/Do-V2ray/main/install.sh)
 ```bash
+bash
 chmod +x install.sh
 ./install.sh
