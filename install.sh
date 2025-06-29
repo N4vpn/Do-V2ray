@@ -1,7 +1,15 @@
 #!/bin/bash
-
+echo ""
+echo "==========================================="
+echo " 🚀 Script By Nanda (N4 VPN)                "
+echo "==========================================="
+echo ""
 # === USER SET UUID ===
-UUID="d4ebe6db-364b-4618-94cf-af93d177041d"  # ← here add in your own uuid
+UUID="d4ebe6db-364b-4618-94cf-af93d177041d"  # Change to your UUID if needed
+WS_PATH="/TG-@n4vpn"
+
+# Enter your Cloud Run Hostname here (ex: my-app-abc123.run.app)
+CLOUD_RUN_HOST="nanda-xxxx.us-east4.run.app"
 
 # Auto-generate UUID if not set
 if [ -z "$UUID" ]; then
@@ -10,7 +18,7 @@ fi
 
 echo "Using UUID: $UUID"
 
-# Docker install check
+# Install Docker if not present
 if ! command -v docker &> /dev/null; then
   echo "Installing Docker..."
   apt update
@@ -29,15 +37,14 @@ cat > ~/v2ray/config.json <<EOF
     "protocol": "vless",
     "settings": {
       "clients": [{
-        "id": "$UUID",
-        "flow": "xtls-rprx-vision"
+        "id": "$UUID"
       }],
       "decryption": "none"
     },
     "streamSettings": {
       "network": "ws",
       "wsSettings": {
-        "path": "/TG-@n4vpn"
+        "path": "$WS_PATH"
       }
     }
   }],
@@ -47,18 +54,18 @@ cat > ~/v2ray/config.json <<EOF
 }
 EOF
 
-docker run -d --name v2ray \
-  -v ~/v2ray/config.json:/etc/v2ray/config.json \
-  -p 8080:8080 \
-  v2fly/v2fly-core
+# Run V2Ray container
+docker run -d --name v2ray --restart unless-stopped -v ~/v2ray/config.json:/etc/v2ray/config.json -p 8080:8080 v2fly/v2fly-core
 
-if command -v ufw &> /dev/null; then
-  ufw allow 8080/tcp
-  ufw reload
-fi
-
-echo "✅ V2Ray Installed Successfully"
-echo "UUID: $UUID"
-echo "WebSocket path: /TG-@n4vpn"
-echo "Port: 8080"
-echo "Use this config with your GCP Cloud Run proxy."
+# Generate VLESS URL
+echo
+echo "✅ V2Ray (WebSocket) installed successfully!"
+echo "🌐 Cloud Run Proxy Host: $CLOUD_RUN_HOST"
+echo
+echo "👉 VLESS Config URL:"
+echo "vless://$UUID@$CLOUD_RUN_HOST:443?encryption=none&security=tls&type=ws&host=$CLOUD_RUN_HOST&path=$(echo $WS_PATH | sed 's/\//%2F/g')#GCP-Proxy"
+echo "ဒီ Url ကို Copy ယူပြီး Note ထဲ ခဏသိမ်းထားပါ။ CloudRun Host ရလာရင် Host ပြောင်းပီး တန်းသုံးရုံပါပဲ"
+echo ""
+echo "==========================================="
+echo " Join Telegram Channel  https://t.me/n4vpn "
+echo "==========================================="
