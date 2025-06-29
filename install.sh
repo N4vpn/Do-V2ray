@@ -89,3 +89,4 @@ if [ $? -eq 0 ]; then
   echo "$VLESS_URL"
 else
   echo "❌ V2Ray container failed to start."
+fi
