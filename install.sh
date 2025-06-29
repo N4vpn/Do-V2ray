@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 echo ""
@@ -6,14 +7,12 @@ echo " 🚀 Script By Nanda (N4 VPN)"
 echo "==========================================="
 echo ""
 
-# User input for domain or IP
 read -p "Enter your VPS domain or IP address: " DOMAIN
 if [[ -z "$DOMAIN" ]]; then
   echo "❌ Domain or IP cannot be empty. Exiting."
   exit 1
 fi
 
-# User input for UUID (optional)
 read -p "Enter your UUID (leave empty for auto generate): " UUID
 if [[ -z "$UUID" ]]; then
   UUID=$(cat /proc/sys/kernel/random/uuid)
@@ -25,7 +24,6 @@ fi
 WS_PATH="/TG-@n4vpn"
 PORT=8080
 
-# Check & install Docker if missing
 if ! command -v docker &> /dev/null; then
   echo "📦 Installing Docker..."
   apt update -y
@@ -67,11 +65,7 @@ EOF
 docker rm -f v2ray 2>/dev/null
 
 echo "🚀 Starting V2Ray docker container..."
-docker run -d --name v2ray \
-  -p $PORT:$PORT \
-  -v ~/v2ray/config.json:/etc/v2ray/config.json \
-  v2fly/v2fly-core \
-  v2ray -config /etc/v2ray/config.json
+docker run -d --name v2ray   -p $PORT:$PORT   -v ~/v2ray/config.json:/etc/v2ray/config.json   v2fly/v2fly-core   v2ray -config /etc/v2ray/config.json
 
 sleep 3
 
